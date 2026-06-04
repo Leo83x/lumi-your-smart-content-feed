@@ -56,6 +56,8 @@
   --border: oklch(0.30 0.012 264);
   --input: oklch(0.27 0.012 264);
   --ring: oklch(0.89 0.21 130);
+  --neon-yellow: oklch(0.92 0.19 95);
+  --neon-lime: oklch(0.89 0.21 130);
 }
 
 @layer base {

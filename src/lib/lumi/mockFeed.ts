@@ -6,6 +6,11 @@ export type FeedItem = {
   title: string;
   bullets: string[];
   relevance: number; // 0-100
+  media?: {
+    kind: "thumbnail" | "reel";
+    src: string;
+    duration?: string;
+  };
 };
 
 export const MOCK_FEED: FeedItem[] = [
@@ -21,6 +26,7 @@ export const MOCK_FEED: FeedItem[] = [
       "Novo hook use() simplifica fetching com Suspense nativo.",
     ],
     relevance: 94,
+    media: { kind: "thumbnail", src: "__YT_THUMB__", duration: "12:48" },
   },
   {
     id: "2",
@@ -34,6 +40,7 @@ export const MOCK_FEED: FeedItem[] = [
       "Monetização migra de atenção para resolução de tarefas.",
     ],
     relevance: 88,
+    media: { kind: "reel", src: "__REEL__", duration: "0:47" },
   },
   {
     id: "3",
