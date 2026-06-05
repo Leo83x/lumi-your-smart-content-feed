@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiYoutubeOauthStartRouteImport } from './routes/api/youtube/oauth/start'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -34,18 +35,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiYoutubeOauthStartRoute = ApiYoutubeOauthStartRouteImport.update({
+  id: '/api/youtube/oauth/start',
+  path: '/api/youtube/oauth/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,25 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/onboarding' | '/settings'
+  fullPaths:
+    | '/'
+    | '/feed'
+    | '/onboarding'
+    | '/settings'
+    | '/api/youtube/oauth/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/onboarding' | '/settings'
-  id: '__root__' | '/' | '/feed' | '/onboarding' | '/settings'
+  to: '/' | '/feed' | '/onboarding' | '/settings' | '/api/youtube/oauth/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/feed'
+    | '/onboarding'
+    | '/settings'
+    | '/api/youtube/oauth/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +87,7 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
+  ApiYoutubeOauthStartRoute: typeof ApiYoutubeOauthStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/youtube/oauth/start': {
+      id: '/api/youtube/oauth/start'
+      path: '/api/youtube/oauth/start'
+      fullPath: '/api/youtube/oauth/start'
+      preLoaderRoute: typeof ApiYoutubeOauthStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,7 +135,18 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
+  ApiYoutubeOauthStartRoute: ApiYoutubeOauthStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
