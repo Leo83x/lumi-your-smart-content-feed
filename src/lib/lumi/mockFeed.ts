@@ -1,11 +1,13 @@
 export type FeedItem = {
   id: string;
-  source: "youtube" | "rss";
+  source: "youtube" | "rss" | "instagram";
   sourceName: string;
   timestamp: string;
   title: string;
   bullets: string[];
   relevance: number; // 0-100
+  category?: "foco" | "work" | "lazer";
+  tags?: string[];
   media?: {
     kind: "thumbnail" | "reel";
     src: string;
@@ -22,10 +24,12 @@ export const MOCK_FEED: FeedItem[] = [
     title: "10 novidades absurdas do React 19 que ninguém te contou",
     bullets: [
       "Server Actions agora rodam edge-first com latência sub-50ms.",
-      "Compiler elimina 90% dos useMemo manuais em apps reais.",
+      "Compiler elimina 90% os useMemo manuais em apps reais.",
       "Novo hook use() simplifica fetching com Suspense nativo.",
     ],
     relevance: 94,
+    category: "work",
+    tags: ["Tecnologia"],
     media: { kind: "thumbnail", src: "__YT_THUMB__", duration: "12:48" },
   },
   {
@@ -40,6 +44,8 @@ export const MOCK_FEED: FeedItem[] = [
       "Monetização migra de atenção para resolução de tarefas.",
     ],
     relevance: 88,
+    category: "work",
+    tags: ["Tecnologia", "Negócios"],
     media: { kind: "reel", src: "__REEL__", duration: "0:47" },
   },
   {
@@ -54,6 +60,8 @@ export const MOCK_FEED: FeedItem[] = [
       "Curiosidade vira a habilidade composta mais importante.",
     ],
     relevance: 76,
+    category: "lazer",
+    tags: ["Outros"],
   },
   {
     id: "4",
@@ -67,6 +75,8 @@ export const MOCK_FEED: FeedItem[] = [
       "Preço inicial estimado em US$ 1.499.",
     ],
     relevance: 71,
+    category: "work",
+    tags: ["Design", "Tecnologia"],
   },
   {
     id: "5",
@@ -80,5 +90,7 @@ export const MOCK_FEED: FeedItem[] = [
       "Revisões semanais de 20 min mantêm o sistema vivo.",
     ],
     relevance: 82,
+    category: "lazer",
+    tags: ["Saúde"],
   },
 ];

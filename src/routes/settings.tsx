@@ -94,7 +94,7 @@ function Settings() {
 
         <Section
           title="Modo Trabalho"
-          subtitle="Horário Seg–Sex em que vamos priorizar conteúdo de Foco."
+          subtitle="Horário Seg–Sex em que vamos priorizar conteúdo de Work."
         >
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex gap-1.5">
