@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as FeedRouteImport } from './routes/feed'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthCompleteRouteImport } from './routes/auth.complete'
+import { Route as ApiYoutubeOauthStartRouteImport } from './routes/api/youtube/oauth/start'
+import { Route as ApiYoutubeOauthCallbackRouteImport } from './routes/api/youtube/oauth/callback'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -29,44 +33,104 @@ const FeedRoute = FeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCompleteRoute = AuthCompleteRouteImport.update({
+  id: '/complete',
+  path: '/complete',
+  getParentRoute: () => AuthRoute,
+} as any)
+const ApiYoutubeOauthStartRoute = ApiYoutubeOauthStartRouteImport.update({
+  id: '/api/youtube/oauth/start',
+  path: '/api/youtube/oauth/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiYoutubeOauthCallbackRoute = ApiYoutubeOauthCallbackRouteImport.update({
+  id: '/api/youtube/oauth/callback',
+  path: '/api/youtube/oauth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/auth/complete': typeof AuthCompleteRoute
+  '/api/youtube/oauth/callback': typeof ApiYoutubeOauthCallbackRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/auth/complete': typeof AuthCompleteRoute
+  '/api/youtube/oauth/callback': typeof ApiYoutubeOauthCallbackRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/feed': typeof FeedRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/auth/complete': typeof AuthCompleteRoute
+  '/api/youtube/oauth/callback': typeof ApiYoutubeOauthCallbackRoute
+  '/api/youtube/oauth/start': typeof ApiYoutubeOauthStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/onboarding' | '/settings'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/feed'
+    | '/onboarding'
+    | '/settings'
+    | '/auth/complete'
+    | '/api/youtube/oauth/callback'
+    | '/api/youtube/oauth/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/onboarding' | '/settings'
-  id: '__root__' | '/' | '/feed' | '/onboarding' | '/settings'
+  to:
+    | '/'
+    | '/auth'
+    | '/feed'
+    | '/onboarding'
+    | '/settings'
+    | '/auth/complete'
+    | '/api/youtube/oauth/callback'
+    | '/api/youtube/oauth/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/feed'
+    | '/onboarding'
+    | '/settings'
+    | '/auth/complete'
+    | '/api/youtube/oauth/callback'
+    | '/api/youtube/oauth/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
   FeedRoute: typeof FeedRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
+  ApiYoutubeOauthCallbackRoute: typeof ApiYoutubeOauthCallbackRoute
+  ApiYoutubeOauthStartRoute: typeof ApiYoutubeOauthStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -99,14 +170,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/complete': {
+      id: '/auth/complete'
+      path: '/complete'
+      fullPath: '/auth/complete'
+      preLoaderRoute: typeof AuthCompleteRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/api/youtube/oauth/start': {
+      id: '/api/youtube/oauth/start'
+      path: '/api/youtube/oauth/start'
+      fullPath: '/api/youtube/oauth/start'
+      preLoaderRoute: typeof ApiYoutubeOauthStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/youtube/oauth/callback': {
+      id: '/api/youtube/oauth/callback'
+      path: '/api/youtube/oauth/callback'
+      fullPath: '/api/youtube/oauth/callback'
+      preLoaderRoute: typeof ApiYoutubeOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthRouteChildren {
+  AuthCompleteRoute: typeof AuthCompleteRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCompleteRoute: AuthCompleteRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   FeedRoute: FeedRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
+  ApiYoutubeOauthCallbackRoute: ApiYoutubeOauthCallbackRoute,
+  ApiYoutubeOauthStartRoute: ApiYoutubeOauthStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
