@@ -9,13 +9,27 @@ const anon =
   (typeof process !== "undefined" ? process.env.SUPABASE_PUBLISHABLE_KEY : "") ||
   "";
 
-export const supabase: SupabaseClient = createClient(url, anon, {
-  auth: {
-    persistSession: typeof window !== "undefined",
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: "lumi-auth",
-  },
-});
-
 export const isSupabaseConfigured = Boolean(url && anon);
+
+export const supabase: SupabaseClient = isSupabaseConfigured
+  ? createClient(url, anon, {
+      auth: {
+        persistSession: typeof window !== "undefined",
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "lumi-auth",
+      },
+    })
+  : (new Proxy({}, {
+      get(target, prop) {
+        if (prop === 'auth') {
+          return {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+          };
+        }
+        return () => {
+          throw new Error("Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+        };
+      }
+    }) as any);
