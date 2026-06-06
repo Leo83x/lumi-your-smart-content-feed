@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { Wordmark } from "@/components/lumi/Wordmark";
 import { MOCK_FEED, type FeedItem } from "@/lib/lumi/mockFeed";
-import { fetchRealFeed, fetchInstagramTimeline } from "@/lib/api/feed.functions";
+import { fetchRealFeed, fetchInstagramTimeline, fetchYoutubeTimeline } from "@/lib/api/feed.functions";
 import ytThumb from "@/assets/yt-thumb-react.jpg";
 import reelPoster from "@/assets/reel-aggregator.jpg";
 import {
@@ -191,11 +191,30 @@ function FeedPage() {
         });
       }
 
+            // 2.5 Fetch YouTube timeline real feed if session cookie is saved
+      const savedYtCookie = localStorage.getItem("lumi_youtube_sessionid");
+      let ytSuccess = false;
+      if (savedYtCookie && activeConns.some(c => c.type === "youtube")) {
+        try {
+          const ytResult = await fetchYoutubeTimeline({
+            data: { sessionId: savedYtCookie }
+          });
+          if (ytResult && ytResult.items && ytResult.items.length > 0) {
+            items = [...ytResult.items, ...items];
+            ytSuccess = true;
+          } else if (ytResult && ytResult.error) {
+            console.warn("Erro ao raspar YouTube: " + ytResult.error);
+          }
+        } catch (ytError) {
+          console.error("YouTube Scraper failed:", ytError);
+        }
+      }
+
       // 3. Fallback simulated YouTube posts if YT channel has no items
       const ytConns = activeConns.filter(c => c.type === "youtube");
       ytConns.forEach((conn) => {
-        const hasItems = items.some(item => item.sourceName === conn.name || item.sourceName === "@" + conn.name.replace("@", ""));
-        if (!hasItems) {
+        const hasItems = items.some(item => item.source === "youtube");
+        if (!hasItems && !ytSuccess) {
           items.push({
             id: conn.id + "_sim_yt_" + Date.now(),
             source: "youtube" as const,
@@ -1519,9 +1538,15 @@ function ConexoesTab({
   const handleSaveCookie = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionCookie.trim()) return;
-    localStorage.setItem("lumi_instagram_sessionid", sessionCookie.trim());
-    setIsCookieSaved(true);
-    toast.success("Cookie do Instagram salvo! Timeline sincronizada.");
+    if (activePlatform === "instagram") {
+      localStorage.setItem("lumi_instagram_sessionid", sessionCookie.trim());
+      setIsCookieSaved(true);
+      toast.success("Cookie do Instagram salvo! Timeline sincronizada.");
+    } else if (activePlatform === "youtube") {
+      localStorage.setItem("lumi_youtube_sessionid", sessionCookie.trim());
+      setIsCookieSaved(true);
+      toast.success("Cookie do YouTube salvo! Timeline sincronizada.");
+    }
     syncRealFeed(connections);
   };
 

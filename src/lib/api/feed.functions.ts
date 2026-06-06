@@ -421,6 +421,97 @@ function addLog(msg: string) {
   }
 }
 
+
+export const fetchYoutubeTimeline = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ sessionId: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    try {
+      const response = await fetch("https://www.youtube.com/", {
+        method: "GET",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Cookie": data.sessionId
+        }
+      });
+
+      if (!response.ok) {
+        return { error: "Erro HTTP do YouTube: " + response.status };
+      }
+
+      const html = await response.text();
+      const startKeyword = "ytInitialData = ";
+      const startIndex = html.indexOf(startKeyword);
+      if (startIndex === -1) {
+        return { error: "Não foi possível encontrar os dados da timeline (ytInitialData) no HTML." };
+      }
+
+      const dataStart = startIndex + startKeyword.length;
+      const scriptEndIndex = html.indexOf("</script>", dataStart);
+      if (scriptEndIndex === -1) {
+        return { error: "Não foi possível encontrar o final do script da timeline." };
+      }
+
+      let rawJson = html.substring(dataStart, scriptEndIndex).trim();
+      if (rawJson.endsWith(";")) {
+        rawJson = rawJson.slice(0, -1);
+      }
+
+      const json = JSON.parse(rawJson);
+      const parsedItems: any[] = [];
+      
+      let contents;
+      try {
+        contents = json.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.richGridRenderer?.contents;
+      } catch (e) {
+        // Fallback for different ytInitialData layouts
+      }
+
+      if (!contents) {
+        return { error: "A estrutura do feed do YouTube mudou ou não há vídeos recomendados." };
+      }
+
+      for (const c of contents) {
+        const v = c.richItemRenderer?.content?.videoRenderer;
+        if (v && v.videoId) {
+          const id = "yt_real_" + v.videoId;
+          const sourceName = v.ownerText?.runs?.[0]?.text || "YouTube";
+          const title = v.title?.runs?.[0]?.text || "Vídeo";
+          const desc = v.descriptionSnippet?.runs?.[0]?.text || "";
+          const timestamp = v.publishedTimeText?.simpleText || "Recente";
+          const duration = v.lengthText?.simpleText || "10:00";
+          const thumbnail = v.thumbnail?.thumbnails?.[v.thumbnail.thumbnails.length - 1]?.url || "";
+
+          const bullets = generateBulletSummaries(desc || title, title);
+          const cat = autoCategorize(title, desc || title);
+          const tags = autoTag(title, desc || title);
+
+          parsedItems.push({
+            id,
+            source: "youtube" as const,
+            sourceName,
+            timestamp,
+            title,
+            bullets,
+            relevance: 85 + Math.floor(Math.random() * 10),
+            tags,
+            category: cat,
+            media: thumbnail ? {
+              kind: "thumbnail" as const,
+              src: thumbnail,
+              duration
+            } : undefined
+          });
+        }
+      }
+
+      return { items: parsedItems };
+    } catch (e: any) {
+      console.error("Error fetching YouTube timeline:", e);
+      return { error: e.message };
+    }
+  });
+
+
 export const startInstagramWebViewScraper = createServerFn({ method: "POST" })
   .handler(async () => {
     if (activeScraper && activeScraper.status === 'running') {
